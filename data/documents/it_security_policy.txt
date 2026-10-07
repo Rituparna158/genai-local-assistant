@@ -1,0 +1,28 @@
+IT SECURITY POLICY
+
+Purpose
+This policy establishes minimum security practices for protecting company systems, accounts, devices, and information.
+
+PASSWORD REQUIREMENTS
+- Passwords must contain at least 12 characters.
+- Employees must not share passwords with other people.
+- Passwords should be unique to company accounts and should not be reused across unrelated services.
+- Suspected credential compromise must be reported promptly to the IT/security team.
+
+MULTI-FACTOR AUTHENTICATION
+Two-factor authentication (2FA) is mandatory for company accounts and supported systems. Employees must use the approved authentication method and must not approve authentication requests they did not initiate.
+
+PHISHING REPORTING
+Employees should treat unexpected links, attachments, login requests, payment requests, and credential requests as potentially suspicious.
+- Do not enter credentials or open attachments when a message appears suspicious.
+- Report suspected phishing through the company's approved security reporting mechanism or to the IT/security team.
+- If credentials were entered into a suspicious site, report the incident immediately and follow the security team's instructions.
+
+CLEAN DESK
+Employees must keep sensitive documents and information secure when away from their workspace. Confidential papers should not be left unattended on desks, printers, or meeting-room surfaces. Devices should be locked when unattended.
+
+UNAUTHORIZED USB DRIVES
+Employees must not connect unauthorized USB drives or other removable storage devices to company computers or systems. Only company-approved or explicitly authorized removable media may be used.
+
+COMPLIANCE
+Employees are expected to follow these requirements and cooperate with security investigations and remediation activities.
