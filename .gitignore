@@ -16,3 +16,6 @@ __pycache__/
 
 # Local Vector Database & Storage
 data/qdrant_db/
+
+# Scratch & Practice Scripts
+practice/
