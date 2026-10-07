@@ -13,3 +13,6 @@ __pycache__/
 
 # Logs & temp files
 *.log
+
+# Local Vector Database & Storage
+data/qdrant_db/
