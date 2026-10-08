@@ -44,9 +44,17 @@ class ChatResponse(BaseModel):
         default=None,
         description="Session ID associated with the interaction"
     )
+    route: Optional[str] = Field(
+        default=None,
+        description="The intelligent routing pathway selected (rag, sql, combined, chitchat, refuse)"
+    )
     sources: Optional[List[SourceCitation]] = Field(
         default=None,
         description="List of cited source documents and chunks (when applicable)"
+    )
+    sql_query: Optional[str] = Field(
+        default=None,
+        description="The executed SQL query (when applicable for database searches)"
     )
 
 

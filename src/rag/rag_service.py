@@ -107,6 +107,7 @@ class RAGService:
         return {
             "answer": answer_text,
             "sources": sources,
+            "context": context_text,
             "retrieved_chunks_count": len(retrieved_docs),
         }
 
