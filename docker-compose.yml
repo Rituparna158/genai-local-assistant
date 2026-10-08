@@ -1,0 +1,114 @@
+version: "3.8"
+
+services:
+  # 1. PostgreSQL Relational Database (Seeded with customers, products, orders)
+  postgres:
+    image: postgres:16-alpine
+    container_name: genai_postgres
+    restart: unless-stopped
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: assistant_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
+    volumes:
+      - ./data/sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d assistant_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - genai_network
+
+  # 2. Qdrant Vector Database (Document embeddings & semantic retrieval)
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: genai_qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - genai_network
+
+  # 3. Local Ollama LLM Runtime (Serves llama3.2:3b and nomic-embed-text)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: genai_ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - genai_network
+
+  # Helper service: Automatically downloads required models into Ollama on startup
+  ollama-init:
+    image: curlimages/curl:latest
+    container_name: genai_ollama_init
+    depends_on:
+      - ollama
+    entrypoint:
+      - "sh"
+      - "-c"
+      - >
+        echo 'Initializing local Ollama models...';
+        sleep 3;
+        curl -s http://ollama:11434/api/pull -d '{"name": "nomic-embed-text"}';
+        curl -s http://ollama:11434/api/pull -d '{"name": "llama3.2:3b"}';
+        echo 'Ollama models ready!';
+    networks:
+      - genai_network
+
+  # 4. FastAPI Enterprise Assistant Backend
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: genai_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      ollama:
+        condition: service_started
+    environment:
+      APP_ENV: production
+      OLLAMA_BASE_URL: http://ollama:11434
+      LLM_MODEL: llama3.2:3b
+      EMBEDDING_MODEL: nomic-embed-text
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: assistant_db
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+      QDRANT_COLLECTION: company_documents
+    volumes:
+      - ./data/documents:/app/data/documents:ro
+    networks:
+      - genai_network
+
+volumes:
+  postgres_data:
+    name: genai_postgres_data
+  qdrant_data:
+    name: genai_qdrant_data
+  ollama_data:
+    name: genai_ollama_data
+
+networks:
+  genai_network:
+    name: genai_network
+    driver: bridge

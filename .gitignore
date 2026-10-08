@@ -14,8 +14,11 @@ __pycache__/
 # Logs & temp files
 *.log
 
-# Local Vector Database & Storage
+# Local Databases & Vector Storage
 data/qdrant_db/
+*.db
+*.sqlite
+*.sqlite3
 
 # Scratch & Practice Scripts
 practice/
