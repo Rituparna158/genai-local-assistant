@@ -3,8 +3,8 @@ Unit tests for TextChunker (src/rag/chunker.py).
 Validates document splitting, chunk size, overlap boundaries, and metadata enrichment.
 """
 
-import pytest
 from langchain_core.documents import Document
+
 from src.rag.chunker import TextChunker
 
 

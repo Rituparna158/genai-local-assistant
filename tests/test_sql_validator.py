@@ -5,6 +5,7 @@ prevents multi-statement SQL injection, and validates code fence sanitization.
 """
 
 import pytest
+
 from src.sql_agent.sql_validator import SQLValidationResult, SQLValidator
 
 
@@ -74,14 +75,19 @@ class TestSQLValidator:
         result = SQLValidator.validate(forbidden_query)
         assert result.is_valid is False
         assert result.error_message is not None
-        assert expected_keyword.lower() in result.error_message.lower() or "select" in result.error_message.lower()
+        assert (
+            expected_keyword.lower() in result.error_message.lower()
+            or "select" in result.error_message.lower()
+        )
 
     def test_rejects_multi_statement_sql_injection(self):
         """Blocks stacked multiple SQL statements to prevent injection attacks."""
         stacked_query = "SELECT * FROM customers; DROP TABLE orders;"
         result = SQLValidator.validate(stacked_query)
         assert result.is_valid is False
-        assert "multi-statement" in result.error_message.lower() or "forbidden" in result.error_message.lower()
+        assert result.error_message is not None
+        error_msg = result.error_message.lower()
+        assert "multi-statement" in error_msg or "forbidden" in error_msg
 
     def test_rejects_piggybacked_embedded_ddl(self):
         """Blocks attempts to execute administrative stored procedures or commands."""

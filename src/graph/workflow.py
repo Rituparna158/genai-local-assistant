@@ -6,13 +6,16 @@ and refusal nodes with conversational memory checkpointing.
 
 import logging
 import uuid
-from typing import Any, Dict, Optional
+from typing import Any
+
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
+
 from src.graph.nodes import (
     chitchat_node,
     combined_node,
+    contextualize_node,
     rag_node,
     refuse_node,
     router_node,
@@ -33,9 +36,10 @@ def route_selector(state: AgentState) -> str:
 
 def create_agent_graph():
     """Builds and compiles the StateGraph workflow with memory checkpointing."""
-    builder = StateGraph(AgentState)
+    builder = StateGraph(AgentState)  # type: ignore[arg-type]
 
     # 1. Register nodes
+    builder.add_node("contextualize", contextualize_node)
     builder.add_node("router", router_node)
     builder.add_node("rag", rag_node)
     builder.add_node("sql", sql_node)
@@ -43,8 +47,9 @@ def create_agent_graph():
     builder.add_node("chitchat", chitchat_node)
     builder.add_node("refuse", refuse_node)
 
-    # 2. Add edges
-    builder.add_edge(START, "router")
+    # 2. Add edges: START -> contextualize -> router
+    builder.add_edge(START, "contextualize")
+    builder.add_edge("contextualize", "router")
 
     builder.add_conditional_edges(
         "router",
@@ -76,7 +81,7 @@ def create_agent_graph():
 agent_graph = create_agent_graph()
 
 
-async def run_assistant(question: str, session_id: Optional[str] = None) -> Dict[str, Any]:
+async def run_assistant(question: str, session_id: str | None = None) -> dict[str, Any]:
     """
     Executes the conversational graph workflow for an incoming question.
 

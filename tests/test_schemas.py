@@ -5,15 +5,14 @@ Validates schema validation, constraints, serialization, and edge cases.
 
 import pytest
 from pydantic import ValidationError
+
 from src.api.schemas import (
-    HealthResponse,
     ChatRequest,
     ChatResponse,
-    SourceCitation,
+    DocumentIngestResponse,
     DocumentItem,
     DocumentListResponse,
-    DocumentIngestResponse,
-    DocumentDeleteResponse,
+    SourceCitation,
 )
 
 

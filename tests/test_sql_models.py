@@ -5,9 +5,11 @@ Validates model creation, constraints, relationships, and serialization.
 
 from datetime import date
 from decimal import Decimal
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
+
 from src.sql_agent.models import Base, Customer, Order, Product
 
 
@@ -80,7 +82,7 @@ def test_order_relationship_and_foreign_keys(in_memory_db: Session):
         country="United States",
     )
     prod = Product(
-        name="Developer Monitor 27\"",
+        name='Developer Monitor 27"',
         category="Displays",
         price=Decimal("350.00"),
         stock=20,
@@ -102,7 +104,7 @@ def test_order_relationship_and_foreign_keys(in_memory_db: Session):
 
     # Test relationship navigation
     assert order.customer.name == "Atlas Corp"
-    assert order.product.name == "Developer Monitor 27\""
+    assert order.product.name == 'Developer Monitor 27"'
     assert len(cust.orders) == 1
     assert cust.orders[0].id == order.id
 

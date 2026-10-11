@@ -3,9 +3,11 @@ Unit tests for DocumentLoader (src/rag/loader.py).
 Validates file loading, format validation, error handling, and metadata normalization.
 """
 
-import pytest
 from pathlib import Path
+
+import pytest
 from langchain_core.documents import Document
+
 from src.rag.loader import DocumentLoader
 
 

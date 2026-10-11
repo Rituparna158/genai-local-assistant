@@ -5,7 +5,7 @@ Validates execution pipeline, metrics logging, safety guards, and schema introsp
 
 import asyncio
 from unittest.mock import AsyncMock, MagicMock
-import pytest
+
 from src.sql_agent.db_connector import db_connector
 from src.sql_agent.sql_service import SQLService
 
@@ -51,7 +51,9 @@ class TestSQLService:
         service = SQLService()
 
         # Mock LLM generation and answer synthesis
-        service._generate_sql = AsyncMock(return_value="SELECT name, country FROM customers LIMIT 2;")
+        service._generate_sql = AsyncMock(
+            return_value="SELECT name, country FROM customers LIMIT 2;"
+        )
         service._synthesize_answer = AsyncMock(
             return_value="The first two customers are TechCorp Solutions in United States and Acme Logistics in Canada."
         )
