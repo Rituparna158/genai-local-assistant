@@ -1,0 +1,33 @@
+# Pre-commit configuration (Git Hooks for Python projects)
+# Automatically runs formatting (Ruff/Prettier-equivalent), linting (Ruff/ESLint-equivalent),
+# and commit message linting (Commitlint / Conventional Commits) before commits.
+
+default_install_hook_types: [pre-commit, commit-msg]
+
+repos:
+  # 1. General code hygiene & security checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-added-large-files
+        args: [--maxkb=2000]
+
+  # 2. Ruff: Python's modern ESLint + Prettier in one
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  # 3. Commitlint: Enforces Conventional Commits (feat, fix, docs, chore, etc.)
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [feat, fix, docs, chore, test, refactor, style, ci, perf, build]

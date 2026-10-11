@@ -1,0 +1,55 @@
+[tool.ruff]
+# Target Python 3.11
+target-version = "py311"
+line-length = 100
+src = ["."]
+
+# Exclude scratch, practice, virtual environment, and third-party folders
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "data",
+    "practice",
+    ".pytest_cache",
+]
+
+[tool.pyright]
+extraPaths = ["."]
+
+
+[tool.ruff.lint]
+# Selected rules:
+# E / W: pycodestyle (PEP8 style errors & warnings)
+# F: Pyflakes (syntax & logic errors, unused variables/imports)
+# I: isort (clean, alphabetical import sorting)
+# B: flake8-bugbear (common bug patterns)
+# UP: pyupgrade (modern Python 3.11 idioms)
+# C4: flake8-comprehensions
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "UP",
+    "C4",
+]
+
+# Tolerances for enterprise agent scripts
+ignore = [
+    "E501", # Line too long (handled gracefully by ruff format)
+    "E402", # Module level import not at top of file (standard in Streamlit sys.path bootstrap)
+    "B008", # Do not perform function call in argument defaults (standard in FastAPI Depends)
+    "B904", # Allow raise ... without from inside error handlers
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+combine-as-imports = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+docstring-code-format = true
