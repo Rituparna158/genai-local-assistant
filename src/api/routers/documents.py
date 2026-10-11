@@ -5,15 +5,17 @@ Handles document ingestion, vector indexing, listing, and deletion.
 
 import logging
 from pathlib import Path
+
 from fastapi import APIRouter, HTTPException, status
+
 from src.api.schemas import (
-    DocumentListResponse,
-    DocumentItem,
-    DocumentIngestResponse,
     DocumentDeleteResponse,
+    DocumentIngestResponse,
+    DocumentItem,
+    DocumentListResponse,
 )
-from src.rag.loader import DocumentLoader
 from src.rag.chunker import TextChunker
+from src.rag.loader import DocumentLoader
 from src.rag.vector_store import vector_store_manager
 
 logger = logging.getLogger(__name__)
@@ -53,7 +55,7 @@ async def ingest_documents() -> DocumentIngestResponse:
 
         vector_store_manager.add_documents(chunks)
 
-        unique_files = len(set(doc.metadata.get("filename") for doc in raw_docs))
+        unique_files = len({doc.metadata.get("filename") for doc in raw_docs})
 
         return DocumentIngestResponse(
             status="success",
@@ -62,11 +64,13 @@ async def ingest_documents() -> DocumentIngestResponse:
             chunks_indexed=len(chunks),
             collection_name=vector_store_manager.collection_name,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error during document ingestion: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Document ingestion failed: {str(e)}",
+            detail="Document ingestion failed due to an internal processing error.",
         )
 
 
@@ -83,12 +87,13 @@ async def list_documents() -> DocumentListResponse:
         raw_list = vector_store_manager.list_indexed_documents()
         items = [
             DocumentItem(
-                filename=item["filename"],
-                file_type=item["file_type"],
-                source=item["source"],
-                chunk_count=item["chunk_count"],
+                filename=item.get("filename", "unknown"),
+                file_type=item.get("file_type", "unknown"),
+                source=item.get("source", ""),
+                chunk_count=item.get("chunk_count", 0),
             )
             for item in raw_list
+            if isinstance(item, dict)
         ]
         total_chunks = sum(item.chunk_count for item in items)
 
@@ -97,11 +102,13 @@ async def list_documents() -> DocumentListResponse:
             total_chunks=total_chunks,
             documents=items,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing documents: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to list documents: {str(e)}",
+            detail="Failed to retrieve indexed document listing from vector storage.",
         )
 
 
@@ -133,5 +140,5 @@ async def delete_document(id: str) -> DocumentDeleteResponse:
         logger.error(f"Error deleting document '{id}': {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error deleting document '{id}': {str(e)}",
+            detail=f"Failed to delete document '{id}' due to an internal error.",
         )

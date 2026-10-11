@@ -5,8 +5,8 @@ Initializes the FastAPI application, mounts modular routers, and configures Swag
 
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
-from src.config import settings
-from src.api.routers import health_router, chat_router, documents_router
+
+from src.api.routers import chat_router, documents_router, health_router
 
 app = FastAPI(
     title="Local GenAI Data Assistant API",

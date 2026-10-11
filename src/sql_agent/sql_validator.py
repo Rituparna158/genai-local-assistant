@@ -7,10 +7,9 @@ Enforces SELECT-only execution and blocks any destructive or multi-statement que
 import logging
 import re
 from dataclasses import dataclass
-from typing import Optional
+
 import sqlparse
 from sqlparse.sql import Statement
-from sqlparse.tokens import DDL, DML, Keyword
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +17,10 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SQLValidationResult:
     """Data contract representing the validation outcome of a SQL query."""
+
     is_valid: bool
     cleaned_query: str
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
 
 class SQLValidator:
@@ -28,9 +28,23 @@ class SQLValidator:
 
     # Explicit list of forbidden mutating, DDL, and administrative keywords
     FORBIDDEN_KEYWORDS = {
-        "INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "TRUNCATE",
-        "CREATE", "REPLACE", "EXEC", "EXECUTE", "GRANT", "REVOKE",
-        "MERGE", "UPSERT", "CALL", "INTO OUTFILE", "DUMPFILE"
+        "INSERT",
+        "UPDATE",
+        "DELETE",
+        "DROP",
+        "ALTER",
+        "TRUNCATE",
+        "CREATE",
+        "REPLACE",
+        "EXEC",
+        "EXECUTE",
+        "GRANT",
+        "REVOKE",
+        "MERGE",
+        "UPSERT",
+        "CALL",
+        "INTO OUTFILE",
+        "DUMPFILE",
     }
 
     @classmethod
@@ -49,7 +63,9 @@ class SQLValidator:
 
         # Strip enclosing double/single quotes if the entire statement is wrapped
         if len(cleaned) >= 2:
-            if (cleaned[0] == '"' and cleaned[-1] == '"') or (cleaned[0] == "'" and cleaned[-1] == "'"):
+            if (cleaned[0] == '"' and cleaned[-1] == '"') or (
+                cleaned[0] == "'" and cleaned[-1] == "'"
+            ):
                 candidate = cleaned[1:-1].strip()
                 if candidate.upper().startswith("SELECT") or candidate.upper().startswith("WITH"):
                     cleaned = candidate
@@ -118,9 +134,7 @@ class SQLValidator:
 
         # 3. Token-level keyword scanning for forbidden tokens
         flattened_tokens = [
-            token.value.upper()
-            for token in statement.flatten()
-            if not token.is_whitespace
+            token.value.upper() for token in statement.flatten() if not token.is_whitespace
         ]
 
         for word in flattened_tokens:

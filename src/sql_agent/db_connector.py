@@ -4,14 +4,16 @@ Manages SQLAlchemy database connections, connection pooling, ORM sessions,
 query execution, and dynamic schema introspection for the SQL Agent.
 """
 
-from contextlib import contextmanager
 import logging
+from collections.abc import Generator
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional
-import sqlalchemy
+from typing import Any
+
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
+
 from src.config import settings
 from src.sql_agent.models import Base
 
@@ -21,7 +23,7 @@ logger = logging.getLogger(__name__)
 class DatabaseConnector:
     """Manages database connection pool, query execution, and schema introspection."""
 
-    def __init__(self, connection_uri: Optional[str] = None):
+    def __init__(self, connection_uri: str | None = None):
         self.uri = connection_uri or settings.db.connection_string
         self.engine: Engine = self._create_resilient_engine()
         self.session_factory = sessionmaker(
@@ -37,7 +39,9 @@ class DatabaseConnector:
         Falls back to a local SQLite database if PostgreSQL server is unreachable.
         """
         try:
-            logger.info(f"Connecting to primary PostgreSQL database at port {settings.db.POSTGRES_PORT}...")
+            logger.info(
+                f"Connecting to primary PostgreSQL database at port {settings.db.POSTGRES_PORT}..."
+            )
             # pool_pre_ping checks connection health before handing it out
             engine = create_engine(
                 self.uri,
@@ -79,8 +83,10 @@ class DatabaseConnector:
                     raw_sql = init_script_path.read_text(encoding="utf-8")
                     # SQLite doesn't support Postgres-specific sequences or alter commands
                     statements = [
-                        s.strip() for s in raw_sql.split(";")
-                        if s.strip() and not s.strip().upper().startswith("SELECT SETVAL")
+                        s.strip()
+                        for s in raw_sql.split(";")
+                        if s.strip()
+                        and not s.strip().upper().startswith("SELECT SETVAL")
                         and not s.strip().upper().startswith("DROP TABLE")
                         and not s.strip().upper().startswith("CREATE TABLE")
                         and not s.strip().upper().startswith("CREATE INDEX")
@@ -107,7 +113,7 @@ class DatabaseConnector:
         finally:
             session.close()
 
-    def execute_query(self, query: str) -> List[Dict[str, Any]]:
+    def execute_query(self, query: str) -> list[dict[str, Any]]:
         """
         Executes a validated read-only SQL query and returns results as dictionaries.
 
@@ -120,8 +126,17 @@ class DatabaseConnector:
         logger.info(f"Executing SQL query: {query.strip()}")
         with self.engine.connect() as conn:
             result = conn.execute(text(query))
-            keys = result.keys()
-            rows = [dict(zip(keys, row)) for row in result.fetchall()]
+            keys = list(result.keys())
+            unique_keys = []
+            seen = {}
+            for k in keys:
+                if k in seen:
+                    seen[k] += 1
+                    unique_keys.append(f"{k}_{seen[k]}")
+                else:
+                    seen[k] = 1
+                    unique_keys.append(k)
+            rows = [dict(zip(unique_keys, row, strict=False)) for row in result.fetchall()]
             logger.info(f"Query returned {len(rows)} row(s).")
             return rows
 

@@ -7,12 +7,14 @@ and document lifecycle operations using LangChain and Qdrant.
 import atexit
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any
+
 from langchain_core.documents import Document
 from langchain_ollama import OllamaEmbeddings
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as qmodels
+
 from src.config import settings
 
 logger = logging.getLogger(__name__)
@@ -60,7 +62,7 @@ class VectorStoreManager:
         """
         server_url = f"http://{settings.qdrant.QDRANT_HOST}:{settings.qdrant.QDRANT_PORT}"
         try:
-            client = QdrantClient(url=server_url, timeout=1.5, check_compatibility=False)
+            client = QdrantClient(url=server_url, timeout=2, check_compatibility=False)
             # Ping server to confirm active connection
             client.get_collections()
             logger.info(f"Connected successfully to Qdrant server at {server_url}")
@@ -94,14 +96,19 @@ class VectorStoreManager:
                         distance=qmodels.Distance.COSINE,
                     ),
                 )
-                logger.info(f"Created Qdrant collection: '{self.collection_name}' (dim=768, metric=Cosine)")
+                logger.info(
+                    f"Created Qdrant collection: '{self.collection_name}' (dim=768, metric=Cosine)"
+                )
             else:
                 logger.info(f"Using existing Qdrant collection: '{self.collection_name}'")
         except Exception as e:
-            logger.error(f"Error checking/creating Qdrant collection '{self.collection_name}': {e}", exc_info=True)
+            logger.error(
+                f"Error checking/creating Qdrant collection '{self.collection_name}': {e}",
+                exc_info=True,
+            )
             raise
 
-    def add_documents(self, documents: List[Document]) -> List[str]:
+    def add_documents(self, documents: list[Document]) -> list[str]:
         """
         Embeds and indexes document chunks into Qdrant.
 
@@ -115,12 +122,14 @@ class VectorStoreManager:
             logger.warning("No documents provided to add_documents.")
             return []
 
-        logger.info(f"Indexing {len(documents)} document chunk(s) into collection '{self.collection_name}'...")
+        logger.info(
+            f"Indexing {len(documents)} document chunk(s) into collection '{self.collection_name}'..."
+        )
         ids = self.vector_store.add_documents(documents)
         logger.info(f"Successfully indexed {len(ids)} chunk(s).")
         return ids
 
-    def similarity_search(self, query: str, k: int = 3) -> List[Document]:
+    def similarity_search(self, query: str, k: int = 3) -> list[Document]:
         """
         Executes semantic similarity search against indexed document chunks.
 
@@ -136,7 +145,7 @@ class VectorStoreManager:
         logger.info(f"Retrieved {len(results)} relevant chunk(s).")
         return results
 
-    def similarity_search_with_score(self, query: str, k: int = 3) -> List[tuple[Document, float]]:
+    def similarity_search_with_score(self, query: str, k: int = 3) -> list[tuple[Document, float]]:
         """
         Executes similarity search and returns documents with cosine similarity scores.
 
@@ -149,7 +158,7 @@ class VectorStoreManager:
         """
         return self.vector_store.similarity_search_with_score(query=query, k=k)
 
-    def list_indexed_documents(self) -> List[Dict[str, any]]:
+    def list_indexed_documents(self) -> list[dict[str, Any]]:
         """
         Scans Qdrant collection points to list all unique indexed files and chunk counts.
 
@@ -165,7 +174,7 @@ class VectorStoreManager:
                 with_vectors=False,
             )
 
-            file_stats: Dict[str, Dict[str, any]] = {}
+            file_stats: dict[str, dict[str, Any]] = {}
             for record in records:
                 payload = record.payload or {}
                 # LangChain stores metadata inside 'metadata' dictionary
@@ -199,7 +208,9 @@ class VectorStoreManager:
             True if deletion request succeeded.
         """
         try:
-            logger.info(f"Deleting all chunks for file: '{filename}' from collection '{self.collection_name}'")
+            logger.info(
+                f"Deleting all chunks for file: '{filename}' from collection '{self.collection_name}'"
+            )
             self.client.delete(
                 collection_name=self.collection_name,
                 points_selector=qmodels.Filter(

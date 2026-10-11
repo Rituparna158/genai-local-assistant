@@ -5,7 +5,7 @@ using LangChain's RecursiveCharacterTextSplitter.
 """
 
 import logging
-from typing import List, Optional
+
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -19,7 +19,7 @@ class TextChunker:
         self,
         chunk_size: int = 500,
         chunk_overlap: int = 50,
-        separators: Optional[List[str]] = None,
+        separators: list[str] | None = None,
     ):
         """
         Initializes the RecursiveCharacterTextSplitter with chunk parameters.
@@ -41,7 +41,7 @@ class TextChunker:
             is_separator_regex=False,
         )
 
-    def split_documents(self, documents: List[Document]) -> List[Document]:
+    def split_documents(self, documents: list[Document]) -> list[Document]:
         """
         Splits a list of Document objects into smaller chunks and enriches
         each chunk's metadata with a deterministic chunk_id and index.
@@ -57,7 +57,7 @@ class TextChunker:
             return []
 
         raw_chunks = self.splitter.split_documents(documents)
-        enriched_chunks: List[Document] = []
+        enriched_chunks: list[Document] = []
 
         # Group and index chunks per parent file
         file_chunk_counters: dict[str, int] = {}

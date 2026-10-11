@@ -6,13 +6,13 @@ using LangChain document loaders.
 
 import logging
 from pathlib import Path
-from typing import List
-from langchain_core.documents import Document
+
 from langchain_community.document_loaders import (
-    PyPDFLoader,
     Docx2txtLoader,
+    PyPDFLoader,
     TextLoader,
 )
+from langchain_core.documents import Document
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class DocumentLoader:
     SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".txt", ".md"}
 
     @classmethod
-    def load_file(cls, file_path: str | Path) -> List[Document]:
+    def load_file(cls, file_path: str | Path) -> list[Document]:
         """
         Loads a single document file and returns a list of LangChain Document objects.
 
@@ -48,7 +48,7 @@ class DocumentLoader:
             )
 
         logger.info(f"Loading document: {path.name} (type: {extension})")
-        docs: List[Document] = []
+        docs: list[Document] = []
 
         try:
             if extension == ".pdf":
@@ -76,7 +76,7 @@ class DocumentLoader:
         return docs
 
     @classmethod
-    def load_directory(cls, directory_path: str | Path) -> List[Document]:
+    def load_directory(cls, directory_path: str | Path) -> list[Document]:
         """
         Recursively scans a directory and loads all supported files.
 
@@ -90,10 +90,13 @@ class DocumentLoader:
         if not dir_path.is_dir():
             raise NotADirectoryError(f"Directory not found: {dir_path}")
 
-        all_docs: List[Document] = []
+        all_docs: list[Document] = []
         found_files = 0
 
-        for path in sorted(dir_path.iterdir()):
+        for path in sorted(dir_path.rglob("*")):
+            # Skip hidden files and directories (e.g. .git, .env)
+            if any(part.startswith(".") for part in path.parts):
+                continue
             if path.is_file() and path.suffix.lower() in cls.SUPPORTED_EXTENSIONS:
                 found_files += 1
                 try:
@@ -102,5 +105,7 @@ class DocumentLoader:
                 except Exception as e:
                     logger.warning(f"Skipping problematic file {path.name}: {e}")
 
-        logger.info(f"Loaded total {len(all_docs)} segment(s) from {found_files} file(s) in {dir_path.name}")
+        logger.info(
+            f"Loaded total {len(all_docs)} segment(s) from {found_files} file(s) in {dir_path.name}"
+        )
         return all_docs

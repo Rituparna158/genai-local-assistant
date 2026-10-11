@@ -1,8 +1,9 @@
 """RAG (Retrieval-Augmented Generation) package."""
-from .loader import DocumentLoader
+
 from .chunker import TextChunker
-from .vector_store import VectorStoreManager, vector_store_manager
+from .loader import DocumentLoader
 from .rag_service import RAGService, rag_service
+from .vector_store import VectorStoreManager, vector_store_manager
 
 __all__ = [
     "DocumentLoader",

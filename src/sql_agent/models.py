@@ -5,7 +5,8 @@ Defines declarative mappings for customers, products, and orders tables.
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Dict, List
+from typing import Any
+
 from sqlalchemy import (
     CheckConstraint,
     Date,
@@ -21,6 +22,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 class Base(DeclarativeBase):
     """Declarative Base class for all SQLAlchemy ORM models."""
+
     pass
 
 
@@ -29,6 +31,7 @@ class Customer(Base):
     Customer entity representation.
     Tracks corporate/individual clients, locations, and creation timestamps.
     """
+
     __tablename__ = "customers"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -42,13 +45,13 @@ class Customer(Base):
     )
 
     # Relationships
-    orders: Mapped[List["Order"]] = relationship(
+    orders: Mapped[list["Order"]] = relationship(
         "Order",
         back_populates="customer",
         cascade="all, delete-orphan",
     )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serializes the customer model to a dictionary."""
         return {
             "id": self.id,
@@ -67,6 +70,7 @@ class Product(Base):
     Product catalog entity representation.
     Tracks item name, category, unit price, and available inventory stock.
     """
+
     __tablename__ = "products"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -81,13 +85,13 @@ class Product(Base):
     )
 
     # Relationships
-    orders: Mapped[List["Order"]] = relationship(
+    orders: Mapped[list["Order"]] = relationship(
         "Order",
         back_populates="product",
         cascade="all, delete-orphan",
     )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serializes the product model to a dictionary."""
         return {
             "id": self.id,
@@ -98,7 +102,9 @@ class Product(Base):
         }
 
     def __repr__(self) -> str:
-        return f"<Product(id={self.id}, name='{self.name}', price={self.price}, stock={self.stock})>"
+        return (
+            f"<Product(id={self.id}, name='{self.name}', price={self.price}, stock={self.stock})>"
+        )
 
 
 class Order(Base):
@@ -106,6 +112,7 @@ class Order(Base):
     Order transaction entity representation.
     Tracks purchase history linking customer and product with status and financials.
     """
+
     __tablename__ = "orders"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -137,7 +144,7 @@ class Order(Base):
     customer: Mapped["Customer"] = relationship("Customer", back_populates="orders")
     product: Mapped["Product"] = relationship("Product", back_populates="orders")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serializes the order model to a dictionary."""
         return {
             "id": self.id,

@@ -5,10 +5,12 @@ and grounded answer generation with source document citations.
 """
 
 import logging
-from typing import Any, Dict, List
+from typing import Any
+
 from langchain_core.documents import Document
-from langchain_core.prompts import ChatPromptTemplate
+
 from src.api.ollama_service import ollama_service
+from src.prompts import RAG_PROMPT
 from src.rag.vector_store import vector_store_manager
 
 logger = logging.getLogger(__name__)
@@ -22,20 +24,9 @@ class RAGService:
         self.llm = ollama_service.llm
 
         # Grounded system prompt strictly enforcing facts from context and citations
-        self.rag_prompt = ChatPromptTemplate.from_messages([
-            (
-                "system",
-                "You are an accurate enterprise data assistant.\n"
-                "Answer the user's question using ONLY the factual information provided in the CONTEXT below.\n"
-                "Do NOT assume or extrapolate beyond the provided text.\n"
-                "If the information is not present in the CONTEXT, respond with: "
-                "'I cannot find information regarding this in the company documents.'\n\n"
-                "CONTEXT:\n{context}",
-            ),
-            ("human", "{question}"),
-        ])
+        self.rag_prompt = RAG_PROMPT
 
-    def _format_context(self, documents: List[Document]) -> str:
+    def _format_context(self, documents: list[Document]) -> str:
         """Formats retrieved document chunks into a clean, annotated context block."""
         context_parts = []
         for doc in documents:
@@ -46,7 +37,7 @@ class RAGService:
             )
         return "\n\n".join(context_parts)
 
-    def _extract_sources(self, documents: List[Document]) -> List[Dict[str, Any]]:
+    def _extract_sources(self, documents: list[Document]) -> list[dict[str, Any]]:
         """Extracts unique source document provenance records from retrieved chunks."""
         sources = []
         seen = set()
@@ -56,15 +47,17 @@ class RAGService:
             key = (filename, chunk_id)
             if key not in seen:
                 seen.add(key)
-                sources.append({
-                    "filename": filename,
-                    "chunk_id": chunk_id,
-                    "file_type": doc.metadata.get("file_type", ""),
-                    "source_path": doc.metadata.get("source", ""),
-                })
+                sources.append(
+                    {
+                        "filename": filename,
+                        "chunk_id": chunk_id,
+                        "file_type": doc.metadata.get("file_type", ""),
+                        "source_path": doc.metadata.get("source", ""),
+                    }
+                )
         return sources
 
-    async def answer_question(self, question: str, top_k: int = 3) -> Dict[str, Any]:
+    async def answer_question(self, question: str, top_k: int = 3) -> dict[str, Any]:
         """
         Retrieves relevant document chunks and generates a grounded response with citations.
 
@@ -92,10 +85,12 @@ class RAGService:
         context_text = self._format_context(retrieved_docs)
 
         # 3. Format prompt and generate response via local Ollama LLM
-        prompt_value = self.rag_prompt.invoke({
-            "context": context_text,
-            "question": question,
-        })
+        prompt_value = self.rag_prompt.invoke(
+            {
+                "context": context_text,
+                "question": question,
+            }
+        )
 
         response = await self.llm.ainvoke(prompt_value)
         answer_text = str(response.content).strip()
