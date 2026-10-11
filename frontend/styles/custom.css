@@ -135,3 +135,38 @@
     background-color: rgba(239, 68, 68, 0.15);
     color: #ef4444;
 }
+
+/* ==============================================================================
+   Hide Streamlit Development UI Chrome (Deploy, Hamburger Menu, Footer)
+   Transforms the UI into a clean, standalone enterprise web application
+   ============================================================================== */
+
+/* Hide Deploy Button */
+.stAppDeployButton,
+[data-testid="stDeployButton"],
+button[data-testid="stAppDeployButton"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Hide Hamburger Menu (Rerun, Clear Cache, Print, Settings) */
+#MainMenu,
+[data-testid="stMainMenu"],
+[data-testid="stToolbarActions"],
+[data-testid="stToolbar"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Hide Top Decoration Line */
+[data-testid="stDecoration"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Hide Streamlit Footer ('Made with Streamlit') */
+footer,
+[data-testid="stFooter"] {
+    display: none !important;
+    visibility: hidden !important;
+}

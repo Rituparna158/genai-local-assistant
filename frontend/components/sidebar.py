@@ -4,7 +4,9 @@ Displays backend status, active model, session management, and knowledge base do
 """
 
 import uuid
+
 import streamlit as st
+
 from frontend.api_client import api_client
 
 
@@ -17,7 +19,7 @@ def render_sidebar():
         st.subheader("🔌 Backend Status")
         health = api_client.get_health()
         if health.get("status") == "healthy":
-            st.success(f"🟢 Online ({health.get('model', 'llama3.2:3b')})")
+            st.success("🟢 System Online")
             st.caption(f"Environment: **{health.get('app_env', 'development')}**")
         else:
             st.error(f"🔴 Offline ({health.get('error', 'Unreachable')})")
@@ -27,7 +29,7 @@ def render_sidebar():
 
         # 2. Conversational Session Management
         st.subheader("💬 Session Management")
-        st.caption(f"Active Session ID:")
+        st.caption("Active Session ID:")
         st.code(st.session_state.session_id, language=None)
 
         if st.button("🔄 New Conversation", use_container_width=True):

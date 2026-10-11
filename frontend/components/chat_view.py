@@ -3,7 +3,8 @@ Chat View Component.
 Renders message history, intelligent routing badges, SQL query blocks, and source citations.
 """
 
-from typing import Any, Dict, List
+from typing import Any
+
 import streamlit as st
 
 
@@ -20,7 +21,7 @@ def render_route_badge(route: str):
     st.markdown(f'<div class="route-badge {css_class}">{label}</div>', unsafe_allow_html=True)
 
 
-def render_sources(sources: List[Dict[str, Any]]):
+def render_sources(sources: list[dict[str, Any]]):
     """Renders expandable document provenance card with verified chunk citations."""
     if not sources:
         return
@@ -41,7 +42,12 @@ def render_sources(sources: List[Dict[str, Any]]):
 
 def render_sql_drawer(sql_query: str):
     """Renders expandable SQL execution drawer with syntax highlighting."""
-    if not sql_query:
+    if not sql_query or not sql_query.strip():
+        return
+
+    # Only render drawer for genuine SQL queries, never for error text or conversational refusals
+    clean = sql_query.strip().upper()
+    if not clean.startswith(("SELECT", "WITH", "EXPLAIN")):
         return
 
     with st.expander("🔍 Executed PostgreSQL Query", expanded=False):
@@ -49,7 +55,7 @@ def render_sql_drawer(sql_query: str):
         st.caption("🔒 Verified by AST SELECT-only security guardrails.")
 
 
-def render_chat_messages(messages: List[Dict[str, Any]]):
+def render_chat_messages(messages: list[dict[str, Any]]):
     """Iterates through conversation history and renders message bubbles."""
     for msg in messages:
         role = msg["role"]

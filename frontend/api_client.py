@@ -4,8 +4,10 @@ Handles HTTP communication with the FastAPI backend endpoints.
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import httpx
+
 from frontend.config import BACKEND_URL
 
 logger = logging.getLogger(__name__)
@@ -17,7 +19,7 @@ class APIClient:
     def __init__(self, base_url: str = BACKEND_URL):
         self.base_url = base_url.rstrip("/")
 
-    def get_health(self) -> Dict[str, Any]:
+    def get_health(self) -> dict[str, Any]:
         """Checks backend health status and active model."""
         try:
             with httpx.Client(timeout=5.0) as client:
@@ -29,7 +31,7 @@ class APIClient:
             logger.warning(f"Health check failed: {e}")
             return {"status": "offline", "error": str(e)}
 
-    def send_chat(self, message: str, session_id: Optional[str] = None) -> Dict[str, Any]:
+    def send_chat(self, message: str, session_id: str | None = None) -> dict[str, Any]:
         """
         Sends user message to POST /chat with intelligent multi-domain routing.
 
@@ -62,7 +64,7 @@ class APIClient:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def list_documents(self) -> Dict[str, Any]:
+    def list_documents(self) -> dict[str, Any]:
         """Fetches list of indexed documents and collection statistics."""
         try:
             with httpx.Client(timeout=10.0) as client:
@@ -73,7 +75,7 @@ class APIClient:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def ingest_documents(self) -> Dict[str, Any]:
+    def ingest_documents(self) -> dict[str, Any]:
         """Triggers document re-indexing into Qdrant."""
         try:
             with httpx.Client(timeout=60.0) as client:

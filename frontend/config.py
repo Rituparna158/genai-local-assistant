@@ -4,13 +4,12 @@ Defines API endpoints, default settings, and sample demo queries.
 """
 
 import os
-from typing import Dict, List
 
 # FastAPI Backend Base URL
 BACKEND_URL: str = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 # Predefined prompt chips for 1-click testing across all 4 routing modes
-SAMPLE_QUERIES: Dict[str, List[str]] = {
+SAMPLE_QUERIES: dict[str, list[str]] = {
     "📊 SQL Analytics": [
         "Who are our top 3 customers by spending?",
         "Which product has the highest stock quantity?",
