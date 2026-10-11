@@ -3,34 +3,23 @@ Ollama Service Module.
 Handles communication with the local Ollama LLM using LangChain ChatOllama.
 """
 
-from langchain_ollama import ChatOllama
-from langchain_core.prompts import ChatPromptTemplate
+from src.api.llm_factory import llm_factory
 from src.config import settings
+from src.prompts import DEFAULT_CHAT_PROMPT
 
 
 class OllamaService:
-    """Centralized service encapsulating local Ollama LLM interactions."""
+    """Centralized service encapsulating LLM interactions via LLMFactory."""
 
     def __init__(self):
         self.model_name = settings.llm.LLM_MODEL
         self.base_url = settings.llm.OLLAMA_BASE_URL
-        
-        # Initialize LangChain ChatOllama instance
-        self.llm = ChatOllama(
-            model=self.model_name,
-            base_url=self.base_url,
-            temperature=0.0,  # Deterministic, factual output for RAG & SQL
-        )
+
+        # Initialize LLM instance via LLMFactory (defaults to local Ollama)
+        self.llm = llm_factory.get_chat_model(temperature=0.0)
 
         # Standard conversational prompt template
-        self.default_prompt = ChatPromptTemplate.from_messages([
-            (
-                "system",
-                "You are a helpful, accurate, and concise AI assistant. "
-                "Provide direct and factual answers to user questions.",
-            ),
-            ("human", "{user_message}"),
-        ])
+        self.default_prompt = DEFAULT_CHAT_PROMPT
 
     async def generate_response(self, user_message: str) -> str:
         """
@@ -44,7 +33,7 @@ class OllamaService:
         """
         # Format the ChatPromptTemplate with the user message
         prompt_value = self.default_prompt.invoke({"user_message": user_message})
-        
+
         # Asynchronously invoke the local LLM
         response = await self.llm.ainvoke(prompt_value)
         return str(response.content)

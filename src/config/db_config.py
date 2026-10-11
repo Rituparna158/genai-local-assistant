@@ -1,4 +1,4 @@
-﻿"""PostgreSQL Database configuration and connection string helper."""
+"""PostgreSQL Database configuration and connection string helper."""
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -10,9 +10,7 @@ class DatabaseSettings(BaseSettings):
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "postgres_password"
 
-    model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     @property
     def connection_string(self) -> str:
